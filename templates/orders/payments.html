@@ -21,14 +21,14 @@
                   
                 </div>
             </div>
-            <div class="card">
+            {% comment %} <div class="card">
                 <h5 class="card-header">Payment method</h5>
                 <div class="card-body">
                   
                   <p class="card-text">Khalti</p>
                   
                 </div>
-            </div>
+            </div> {% endcomment %}
             <div class="card">
                 <h5 class="card-header">Review Product</h5>
                 <div class="card-body">
@@ -96,8 +96,9 @@
                 <p class="text-center mb-3">
                     <img src="{% static './images/misc/khalti.jpg' %}" height="26">
                 </p>
-                <a href="{% url 'checkout' %}" class="btn btn-primary btn-block"> Make payment</a>
-                
+                {% comment %} <a href="{% url 'checkout' %}" class="btn btn-primary btn-block"> Make payment</a> {% endcomment %}
+                <button id="payment-button">Pay with Khalti</button>
+                <button id="cod-button">Pay with COD</button>
             </div> <!-- card-body.// -->
             </div> <!-- card.// -->
     
@@ -111,5 +112,121 @@
     </div> <!-- container .//  -->
     </section>
     <!-- ========================= SECTION CONTENT END// ========================= -->
+    <script>
+        function generate_uuidv4() {
+            var dt = new Date().getTime();
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,
+            function( c ) {
+               var rnd = Math.random() * 16;//random number in range 0 to 16
+               rnd = (dt + rnd)%16 | 0;
+               dt = Math.floor(dt/16);
+               return (c === 'x' ? rnd : (rnd & 0x3 | 0x8)).toString(16);
+            });
+         }
+        function sendData(data){
+            fetch("http://127.0.0.1:8000/orders/payments/", {
+                method : "POST",
+                headers: {
+                    "Content-type": "application/json",
+                    "X-CSRFToken": csrftoken,
+                },
+                body: JSON.stringify({
+                    orderID: data.product_identity,
+                    transID: data.idx,
+                    payment_method: data.type.name,
+                    status: data.state.name,
+                }),
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                window.location.href=redirect_url + '?order_number='+data.order_number+'&payment_id='+data.transID;
+            });
+        }
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        let orderID={{order.order_number}}
+        let amount={{grand_total}}
+        let redirect_url="{% url 'order_complete' %}"
+        {% comment %} let url={% url 'verify_payments' %} {% endcomment %}
+
+        let csrftoken=getCookie("csrftoken")
+       
+        let codData = 
+                {
+							"product_identity": orderID,
+							"idx": generate_uuidv4(),
+							"type": {"name":"COD"},
+							"state": {"state":"Complete"},
+                }
+        var config = {
+            // replace the publicKey with yours
+            "publicKey": "test_public_key_fc6d963f5e924d598ed21a718265ce54",
+            "productIdentity": orderID,
+            "productName": "cart items",
+            "productUrl": window.location.href,
+            "paymentPreference": [
+                "KHALTI",
+                "EBANKING",
+                "MOBILE_BANKING",
+                "CONNECT_IPS",
+                "SCT",
+                ],
+            "eventHandler": {
+                onSuccess (payload) {
+                    // hit merchant api for initiating verfication
+                    console.log(payload);
+                    fetch("http://127.0.0.1:8000/orders/verify_payments/",{
+						method : "POST",
+						headers: {
+							"Content-type": "application/json",
+							"X-CSRFToken": csrftoken,
+						},
+						body: JSON.stringify({
+							amount: payload.amount,
+							token: payload.token,
+						}),
+					})
+                    .then(response => response.json())
+                    .then(data => sendData(data))
+                    
+                    
+
+
+                },
+                onError (error) {
+                    console.log(error);
+                },
+                onClose () {
+                    console.log('widget is closing');
+                }
+            }
+        };
+
+        var checkout = new KhaltiCheckout(config);
+        var btn = document.getElementById("payment-button");
+        btn.onclick = function () {
+            // minimum transaction amount must be 10, i.e 1000 in paisa.
+            checkout.show({amount: amount*100});
+        }
+
+        let codbutton = document.getElementById('cod-button')
+        codbutton.addEventListener("click", function(){
+            sendData(codData)
+        });
+        
+    </script>
 
 {% endblock content %}
