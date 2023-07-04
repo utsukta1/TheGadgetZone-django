@@ -10,8 +10,23 @@ from .forms import ReviewForm
 from django.contrib import messages
 from orders.models import OrderProduct
 
+from django.shortcuts import render
+from .recommendation import RecommendationSystem
+from .models import Product
+from .tests import import_csv_data
+def product_detaile(request):
+    #import_csv_data('C:\\Users\\elaie\\Documents\\gadget\\TheGadgetZone-django\\store\\updated_data.csv')
+    product = Product.objects.get(pk=1)
 
-# Create your views here.
+    # Initialize and train the recommendation system
+    recommendation_system = RecommendationSystem()
+    recommendation_system.train()
+
+    # Get recommendations for the current product
+    recommendations = recommendation_system.get_recommendations(1)
+
+    return render(request, 'store/product_detail2.html', {'product': product, 'recommendations': recommendations})
+
 
 def store(request,category_slug= None):
     categories = None

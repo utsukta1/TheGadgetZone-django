@@ -1,0 +1,11 @@
+<h1>{{ product.product_name }}</h1>
+<p>{{ product.description }}</p>
+
+<h2>Recommended Products</h2>
+<ul>
+  {% for recommended_product in recommendations %}
+    <li>{{ recommended_product.product_name }}</li>
+  {% empty %}
+    <li>No recommendations available</li>
+  {% endfor %}
+</ul>
