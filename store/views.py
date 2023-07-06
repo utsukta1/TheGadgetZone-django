@@ -14,19 +14,31 @@ from django.shortcuts import render
 from .recommendation import RecommendationSystem
 from .models import Product
 from .tests import import_csv_data
-def product_detaile(request):
+def product_detaile(request,product_id):
     #import_csv_data('C:\\Users\\elaie\\Documents\\gadget\\TheGadgetZone-django\\store\\updated_data.csv')
-    product = Product.objects.get(pk=1)
+    product = Product.objects.get(pk=product_id)
 
     # Initialize and train the recommendation system
     recommendation_system = RecommendationSystem()
     recommendation_system.train()
 
     # Get recommendations for the current product
-    recommendations = recommendation_system.get_recommendations(1)
-
+    recommendations = recommendation_system.get_recommendations(product_id)
+    print(recommendations)
     return render(request, 'store/product_detail2.html', {'product': product, 'recommendations': recommendations})
 
+def recommend(product_id):
+    #import_csv_data('C:\\Users\\elaie\\Documents\\gadget\\TheGadgetZone-django\\store\\updated_data.csv')
+    product = Product.objects.get(pk=product_id)
+
+    # Initialize and train the recommendation system
+    recommendation_system = RecommendationSystem()
+    recommendation_system.train()
+
+    # Get recommendations for the current product
+    recommendations = recommendation_system.get_recommendations(product_id)
+
+    return recommendations
 
 def store(request,category_slug= None):
     categories = None
@@ -55,6 +67,8 @@ def store(request,category_slug= None):
     return render(request, 'store/store.html',context)
 
 def product_detail(request, category_slug, product_slug):
+    
+    product = Product.objects.all()
     try:
         single_product=Product.objects.get(category__slug=category_slug, slug=product_slug)
         in_cart = CartItem.objects.filter(cart__cart_id= _cart_id(request), product = single_product).exists()
@@ -72,12 +86,15 @@ def product_detail(request, category_slug, product_slug):
         orderproduct=None
 
         #get the reviews
+    recommended_product_id = recommend(single_product.id)
     reviews=ReviewRating.objects.filter(product_id=single_product.id, status=True)
     context = {
         'single_product':single_product,
         'in_cart': in_cart,
         'orderproduct':orderproduct,
         'reviews':reviews,
+        'product': product,
+        'p_id': recommended_product_id,
     }
 
     return render(request, 'store/product_detail.html',context)

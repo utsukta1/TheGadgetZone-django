@@ -95,7 +95,28 @@
     </div> <!-- card.// -->
 
     <br>
-
+    <section class="section-content">
+      <h3>Recommended Products</h3>
+      <div class="row">
+        {% for products in product %}
+        {% if products.id in p_id and prodcuts.id != 1 %}
+        <div class="col-md-2">
+            <div class="card">
+                <a href="{{ products.url }}">
+                    <img src="{{ products.images.url }}" alt="{{ products.name }}" class="img-fluid">
+                </a>
+                <div class="card-body">
+                    <h6><a href="{{products.get_url}}" class="card-title">{{ products.product_name }}</h6>
+                    <p class="card-text">{{ products.price }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    
+    </section>
+  
     <div class="row">
                 <div class="col-md-9">
     
