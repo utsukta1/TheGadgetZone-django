@@ -17,24 +17,24 @@ def import_csv_data(file_path):
         i=0
         csv_data = csv.DictReader(file)
         for row in csv_data:
-            
-            person = Product(
-                product_name = row['name'],
-                slug = convert_to_slug(row['name']),
-                description = row['reviews.text'],
-                price = generate_random_price(200, 100000),
-                images = row['imageURLs'],
-                stock = generate_random_price(1, 100),
-                is_available = True,
-                category = random.choice(categories),
-                created_date = row['dateAdded'],
-                modified_date = row['dateUpdated'],
-            )
-            print("Data Added")
-            i=i+1
-            print(i)
-            
-            person.save()
+            if i < 30:
+                person = Product(
+                    product_name = row['name'],
+                    slug = convert_to_slug(row['name']),
+                    description = row['reviews.text'],
+                    price = generate_random_price(200, 100000),
+                    images = row['imageURLs'],
+                    stock = generate_random_price(1, 100),
+                    is_available = True,
+                    category = random.choice(categories),
+                    created_date = row['dateAdded'],
+                    modified_date = row['dateUpdated'],
+                )
+                print("Data Added")
+                i=i+1
+                print(i)
+                
+                person.save()
 
 def convert_to_slug(name):
     slug = slugify(name)
