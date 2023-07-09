@@ -15,7 +15,7 @@ from .recommendation import RecommendationSystem
 from .models import Product
 from .tests import import_csv_data
 def product_detaile(request,product_id):
-    #import_csv_data('C:\\Users\\elaie\\Documents\\gadget\\TheGadgetZone-django\\store\\updated_data.csv')
+   # import_csv_data('C:\\Users\\DELL\\Dropbox\\latest-github\\TheGadgetZone-django\\store\\updated_data.csv')
     product = Product.objects.get(pk=product_id)
 
     # Initialize and train the recommendation system
